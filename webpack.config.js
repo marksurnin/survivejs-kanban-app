@@ -1,7 +1,7 @@
 var path = require('path');
 var HtmlwebpackPlugin = require('html-webpack-plugin');
-var webpack = require('webpack');
 var merge = require('webpack-merge');
+var webpack = require('webpack');
 
 const TARGET = process.env.npm_lifecycle_event;
 const PATHS = {
@@ -9,19 +9,27 @@ const PATHS = {
   build: path.join(__dirname, 'build')
 };
 
-var common = {
+process.env.BABEL_ENV = TARGET;
+
+const common = {
   entry: PATHS.app,
-  // As webpack-dev-server runs in-memory,
-  // we can drop `output` for now.
-  /*output: {
+  resolve: {
+    extensions: ['', '.js', '.jsx']
+  },
+  output: {
     path: PATHS.build,
     filename: 'bundle.js'
-  },*/
+  },
   module: {
     loaders: [
       {
         test: /\.css$/,
         loaders: ['style', 'css'],
+        include: PATHS.app
+      },
+      {
+        test: /\.jsx?$/,
+        loaders: ['babel'],
         include: PATHS.app
       }
     ]
@@ -33,20 +41,20 @@ var common = {
   ]
 };
 
-if (TARGET === 'start' || !TARGET) {
+if(TARGET === 'start' || !TARGET) {
   module.exports = merge(common, {
     devtool: 'eval-source-map',
     devServer: {
-      // Enables History API routes
-      historyAPIFallback: true,
+      historyApiFallback: true,
       hot: true,
       inline: true,
       progress: true,
 
-      // Display only errors to reduce the amount of output
+      // display only errors to reduce the amount of output
       stats: 'errors-only',
 
-      // Parse host and port from env to make it easier to customize
+      // parse host and port from env so this is easy
+      // to customize
       host: process.env.HOST,
       port: process.env.PORT
     },
@@ -54,4 +62,8 @@ if (TARGET === 'start' || !TARGET) {
       new webpack.HotModuleReplacementPlugin()
     ]
   });
+}
+
+if(TARGET === 'build') {
+  module.exports = merge(common, {});
 }
